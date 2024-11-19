@@ -1,0 +1,789 @@
+openapi: 3.0.0
+info:
+  title: Tunne App API
+  version: 1.0.0
+  description: API for managing instances and authentication routes for tunne app
+paths:
+  /auth/google:
+    get:
+      summary: Initiate Google OAuth 2.0 authentication
+      description: Redirects the user to Google’s OAuth 2.0 server to start the authentication process.
+      tags:
+        - Authentication
+      responses:
+        '302':
+          description: Redirect to Google’s authentication page
+        '500':
+          description: Internal server error
+
+  /auth/google/callback:
+    get:
+      summary: Google OAuth 2.0 callback
+      description: Handles the response from Google’s OAuth 2.0 server. Redirects to success or failure route based on authentication result.
+      tags:
+        - Authentication
+      responses:
+        '302':
+          description: Redirect to the success or failure route
+        '500':
+          description: Internal server error
+
+  /auth/success:
+    get:
+      summary: Successful login
+      description: Route called after a successful login. Provides a message about the login status.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Success message and user details
+        '500':
+          description: Internal server error
+
+  /auth/failed:
+    get:
+      summary: Failed login
+      description: Route called after a failed login attempt.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Failure message
+        '500':
+          description: Internal server error
+
+  /auth/logout:
+    get:
+      summary: Logout
+      description: Logs out the current user and destroys the session.
+      tags:
+        - Authentication
+      responses:
+        '302':
+          description: Redirect to home page after logout
+        '500':
+          description: Internal server error
+
+  /auth/profiles:
+    get:
+      summary: Get all profiles
+      description: Retrieves a list of all user profiles.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: A list of user profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    email:
+                      type: string
+                    created_at:
+                      type: string
+                    role:
+                      type: string
+        '500':
+          description: Internal server error
+
+  /auth/user:
+    get:
+      summary: Get logged-in user information
+      description: Retrieves information about the currently logged-in user.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+        '500':
+          description: Internal server error
+
+  /instances/create:
+    post:
+      summary: Create a new instance
+      description: Create a new instance with a name and random ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the instance.
+                random_id:
+                  type: string
+                  description: A random identifier for the instance.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Instance created successfully
+        '400':
+          description: Name is required
+        '500':
+          description: Error creating instance
+
+  /instances/instances:
+    get:
+      summary: Get all instances
+      description: Retrieve a list of all instances.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of instances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    random_id:
+                      type: string
+                    owner_id:
+                      type: integer
+        '500':
+          description: Internal server error
+
+  /instances/instances_has_profiles:
+    get:
+      summary: Get all instances with profiles
+      description: Retrieve a list of all instances with associated profiles.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of instances with profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    instance_id:
+                      type: integer
+                    profile_id:
+                      type: string
+                    role:
+                      type: string
+        '500':
+          description: Internal server error
+
+  /instances/join:
+    post:
+      summary: Add instance to user profile
+      description: Add an instance to a user profile with the given instance ID and profile ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_id:
+                  type: integer
+                  description: The ID of the instance to be added.
+                profile_id:
+                  type: string
+                  description: The ID of the profile to which the instance is added.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Instance added to user profile successfully
+        '400':
+          description: Profile ID is required
+        '500':
+          description: Error adding instance to user profile
+
+  /instances/myprofile:
+    get:
+      summary: Get instances by profile ID
+      description: Retrieve a list of instances associated with a specific profile ID.
+      parameters:
+        - name: profile_id
+          in: query
+          required: true
+          schema:
+            type: string
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of instances associated with the profile ID
+        '400':
+          description: Profile ID is required
+        '500':
+          description: Internal server error
+
+  /instances/response:
+    post:
+      summary: Insert a response
+      description: Insert a response for a given instance and profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_id:
+                  type: integer
+                  description: The ID of the instance.
+                profile_id:
+                  type: string
+                  description: The ID of the profile.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Response added successfully
+        '404':
+          description: Instance ID is required
+        '500':
+          description: Error inserting response
+
+  /instances/answer:
+    post:
+      summary: Answer an instance
+      description: Submit answers for an instance including emoji data, body data, freeform data, rating data, and age data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emojiData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      instance_id:
+                        type: integer
+                      emotion:
+                        type: string
+                      step:
+                        type: integer
+                      response_id:
+                        type: integer
+                      datetime:
+                        type: string
+                bodyData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      instance_id:
+                        type: integer
+                      timestep:
+                        type: integer
+                      hex_color:
+                        type: string
+                      x_position:
+                        type: number
+                      y_position:
+                        type: number
+                      size:
+                        type: number
+                      body_part:
+                        type: string
+                      response_id:
+                        type: integer
+                freeformData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      instance_id:
+                        type: integer
+                      title:
+                        type: string
+                      value:
+                        type: string
+                      response_id:
+                        type: integer
+                ratingData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      instance_id:
+                        type: integer
+                      title:
+                        type: string
+                      value:
+                        type: integer
+                      response_id:
+                        type: integer
+                ageData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      instance_id:
+                        type: integer
+                      title:
+                        type: string
+                      value:
+                        type: string
+                      response_id:
+                        type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Instance answered successfully
+        '400':
+          description: Invalid request format
+        '500':
+          description: Error answering instance
+
+  /instances/OneUserAnswer:
+    get:
+      summary: Get instance answers
+      description: Retrieve all answers for a specific response ID.
+      parameters:
+        - name: response_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Answers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  emojiData:
+                    type: array
+                    items:
+                      type: object
+                  bodyData:
+                    type: array
+                    items:
+                      type: object
+                  freeformData:
+                    type: array
+                    items:
+                      type: object
+                  ratingData:
+                    type: array
+                    items:
+                      type: object
+                  ageData:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Response ID is required
+        '500':
+          description: Error fetching instance answers
+
+  /instances/respondants:
+    get:
+      summary: Get respondents for instance
+      description: Retrieve a list of respondents for a specific instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of respondents for the instance
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Internal server error
+
+  /instances/participantCount:
+    get:
+      summary: Get participant count for instance
+      description: Retrieve the number of participants for a specific instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: The number of participants for the instance
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Internal server error
+
+  /instances/singleInstance:
+    get:
+      summary: Get a single instance
+      description: Retrieve a single instance by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Instance details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  random_id:
+                    type: string
+                  owner_id:
+                    type: integer
+        '404':
+          description: Instance not found
+        '500':
+          description: Internal server error
+
+  /instances/emojiDataInstance:
+    get:
+      summary: Get all emoji data
+      description: Retrieve a list of all emoji data.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of emoji data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    instance_id:
+                      type: integer
+                    emotion:
+                      type: string
+                    step:
+                      type: integer
+                    response_id:
+                      type: integer
+                    datetime:
+                      type: string
+        '500':
+          description: Internal server error
+
+  /instances/bodyDataInstance:
+    get:
+      summary: Get all body data
+      description: Retrieve a list of all body data.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of body data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    instance_id:
+                      type: integer
+                    timestep:
+                      type: integer
+                    hex_color:
+                      type: string
+                    x_position:
+                      type: number
+                    y_position:
+                      type: number
+                    size:
+                      type: number
+                    body_part:
+                      type: string
+                    response_id:
+                      type: integer
+        '500':
+          description: Internal server error
+
+  /instances/leave_all:
+    post:
+      summary: Leave all instances
+      description: Remove a user from all instances.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile_id:
+                  type: string
+                  description: The ID of the profile to be removed from all instances.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: User removed from all instances successfully
+        '400':
+          description: Profile ID is required
+        '500':
+          description: Error removing user from instances
+
+  /instances/downloadCSV:
+    get:
+      summary: Generate CSV for an instance
+      description: Generate a CSV file for the data of a specific instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: CSV file generated successfully
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Error generating CSV
+
+  /instances/myOwnInstances:
+    get:
+      summary: Get instances by owner ID
+      description: Retrieve a list of instances owned by a specific user.
+      parameters:
+        - name: owner_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of instances owned by the user
+        '400':
+          description: Owner ID is required
+        '500':
+          description: Internal server error
+
+  /instances/responseIds:
+    get:
+      summary: Get response IDs for an instance
+      description: Retrieve a list of response IDs associated with a specific instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: A list of response IDs for the instance
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Internal server error
+
+  /instances/saveSurvey:
+    post:
+      summary: Save survey layout
+      description: Save the layout of a survey with a given instance ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_id:
+                  type: integer
+                  description: The ID of the instance to save the layout for.
+                layout:
+                  type: object
+                  description: The layout configuration for the survey.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Survey layout saved successfully
+        '400':
+          description: Instance ID and layout are required
+        '500':
+          description: Error saving survey layout
+
+  /instances/getSurvey:
+    get:
+      summary: Get survey layout
+      description: Retrieve the layout of a survey for a given instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Survey layout retrieved successfully
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Error fetching survey layout
+
+  /instances/getRole:
+    get:
+      summary: Get user role
+      description: Retrieve the role of a user in a given instance.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: profile_id
+          in: query
+          required: true
+          schema:
+            type: string
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: The role of the user in the instance
+        '400':
+          description: Instance ID and Profile ID are required
+        '500':
+          description: Error fetching user role
+
+  /instances/promote:
+    post:
+      summary: Promote user to owner
+      description: Promote a user to owner of a given instance ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instance_id:
+                  type: integer
+                  description: The ID of the instance.
+                profile_id:
+                  type: string
+                  description: The ID of the profile to be promoted.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: User promoted to owner successfully
+        '400':
+          description: Instance ID and Profile ID are required
+        '500':
+          description: Error promoting user
+
+  /instances/averageAge:
+    get:
+      summary: Get average age of participants
+      description: Retrieve the average age of participants for a given instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: The average age of participants
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Error fetching average age
+
+  /instances/randomBodyData:
+    get:
+      summary: Get random body data for instance
+      description: Retrieves random body data for a given instance ID.
+      parameters:
+        - name: instance_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: The ID of the instance for which to retrieve random body data.
+      tags:
+        - Instances
+      responses:
+        '200':
+          description: Successfully retrieved random body data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the body data entry
+                  data:
+                    type: string
+                    description: The data for the body data entry
+        '400':
+          description: Instance ID is required
+        '500':
+          description: Error fetching random body data
