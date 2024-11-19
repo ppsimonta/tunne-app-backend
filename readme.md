@@ -1,5 +1,5 @@
 ## Tunne-app backend
-Node back-end for use with the Tunne-app frontend
+Node back-end for use with the [Tunne-app frontend](https://github.com/ppsimonta/tunne-app-frontend).
 
 ## Installation
 
@@ -12,7 +12,7 @@ Prequisities:
 
 ### Clone the repository:
 ```
-git clone https://peke.plab.fi/frostbit-web/tunne-app-backend.git
+git clone https://github.com/ppsimonta/tunne-app-backend.git
 
 cd tunne-app-backend
 ```
